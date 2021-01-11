@@ -86,16 +86,14 @@ class myNeo4j:
                       year = year,date = date,
                       length = length,score = score).single().value()
     
-    def __add_director(self,tx,name,originalName,link):
+    def __add_director(self,tx,name,link):
         return tx.run('''
                       MERGE (d:director {
                           name : $directorName,
-                          originalName : $directorOrgName,
                           link : $directorLink})
                       RETURN (d)
                       ''',
                       directorName = name,
-                      directorOrgName = originalName,
                       directorLink = link).single().value()
     
     def __add_actor(self,tx,name,originalName,sex,birthday,country,link):
@@ -121,6 +119,7 @@ class myNeo4j:
         return tx.run('''
                       MERGE (t:movieType {
                           name : $mtype})
+                      RETURN t
                       ''',
                       mtype = mType).single().value()
     
@@ -179,7 +178,7 @@ class myNeo4j:
                                                 length,score
                                                 );
     
-    def add_director(self,name,originalName,link):
+    def add_director(self,name,link = ''):
         '''
         添加导演
 
@@ -187,8 +186,6 @@ class myNeo4j:
         ----------
         name : STR
             导演名字.
-        originalName : STR
-            原名.
         link : STR
             导演页面链接.
 
@@ -200,9 +197,44 @@ class myNeo4j:
         '''
         with self.driver.session() as session:
             return session.write_transaction(self.__add_director,
-                                             name,originalName,link);
+                                             name,link);
         
-    def add_actor(self,name,originalName,sex,birthday,country,link):
+    def add_scriptwriter(self,name,link = ''):
+        '''
+        添加编剧人物对象
+
+        Parameters
+        ----------
+        name : STR
+            编剧名字
+        link : STR
+            编剧的个人页面
+
+        Returns
+        -------
+        None.
+
+        '''
+        def __add_scriptwriter(tx,name,link):
+            return tx.run('''
+                          MERGE (d:scriptwriter {
+                              name : $directorName,
+                              link : $directorLink})
+                          RETURN (d)
+                          ''',
+                          directorName = name,
+                          directorLink = link).single().value()
+        
+        with self.driver.session() as session:
+            return session.write_transaction(__add_scriptwriter,name,link);
+        
+    def add_actor(self,
+                  name,
+                  originalName,
+                  sex = True,
+                  birthday = '1997-14-2',
+                  country = '',
+                  link = ''):
         '''
         添加演员
 
@@ -277,6 +309,13 @@ class myNeo4j:
                                              "movie",movieTargName,
                                              relation);
     
+    def establishRelation_srcriptWriter2movie(self,srcName,targName,relation = "编剧"):
+        with self.driver.session() as session:
+            return session.write_transaction(self.__establishRelation,
+                                             "scriptwriter",srcName,
+                                             "movie",targName,
+                                             relation);
+    
     def establishRelation_movie2type(self,srcName,targName,relation = "电影类型"):
         with self.driver.session() as session:
             return session.write_transaction(self.__establishRelation,
@@ -321,8 +360,11 @@ class myNeo4j:
         def __cleanNode(tx):
             return tx.run('''MATCH (n) DELETE n''')
         
+        # def __cleanAll(tx):
+        #     return tx.run('''MATCH (n)-[r]->(m) DELETE r,n,m''')
+        
         with self.driver.session() as session:
-            # session.write_transaction(__cleanRelation);
+            session.write_transaction(__cleanRelation);
             session.write_transaction(__cleanNode);
     
     def search_Movie(self,movieName):
