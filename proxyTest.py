@@ -2,7 +2,10 @@
 """
 Created on Wed Jan  6 21:01:35 2021
 
-@author: 23731
+@author: 江榕煜
+
+代理服务器测试主程序
+
 """
 
 import myProxy
