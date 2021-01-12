@@ -35,7 +35,7 @@ while num > 0:
                           timeout = 1)
     
     except :
-        print('艹！垃圾代理被查水表了'+proxyIP);
+        print('垃圾代理被查水表了'+proxyIP);
         myProxyPool.deltOne(proxyIP);
         
     else:    

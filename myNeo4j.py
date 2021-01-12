@@ -2,7 +2,7 @@
 """
 Created on Fri Dec 11 16:27:43 2020
 
-@author: 23731
+@author: 江榕煜
 """
 
 import neo4j

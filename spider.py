@@ -18,6 +18,8 @@ LIMIT_OBEJECT = 100     # 闲置爬取的数据量，单位：个电影
 
 LIMIT_RATE = 3          # 爬虫速率
 
+USE_PROXY = False       # 选择是否使用代理服务
+
 CLEAN_ORIGINAL_DATABASE = True # 爬虫开始前删除原始数据库数据
 
 SAVE_HTMLFILE = True    # 是否保存爬取过程中的HTML页面内容
@@ -211,7 +213,9 @@ while LIMIT_OBEJECT > pageNum:
     matchOtherName = re.search(r'又名:.*\n', infoDiv.text, re.M|re.I)
     if matchOtherName is None:
         matchOtherName = '';
-    otherName = matchOtherName.group().replace("又名:",'').replace("\n",'').replace(" ",'')
+        otherName = '';
+    else:
+        otherName = matchOtherName.group().replace("又名:",'').replace("\n",'').replace(" ",'')
     
     
     '''开始导入数据至图数据库'''
@@ -261,17 +265,17 @@ while LIMIT_OBEJECT > pageNum:
                                     ])
         
     '''更新URL管理器新数据（有待测试）'''
-    # # 电影推荐数据块提取
-    # recmDiv = wholeHTML_bsObj.find("div",id = "recommendations-bd")
-    # recmMovieFind = recmDiv.find_all("dd");
-    # # 提取当前页面可爬的URL
-    # recmMovieList = [];
-    # for i in recmMovieFind:
-    #     recmMovieList.append((i.text,i.find('a').attrs['href']))
-    # #判断找到的新页面是否已经爬过了，如果爬过则跳过
-    # for i in recmMovieList:
-    #     if GDB_movie.search_Movie(i[0]) == None:    # 查看是否爬过了
-    #         urlManager.add_URL(i)   # 添加到URL管理器中
+    # 电影推荐数据块提取
+    recmDiv = wholeHTML_bsObj.find("div",id = "recommendations")
+    recmMovieFind = recmDiv.find_all("dd");
+    # 提取当前页面可爬的URL
+    recmMovieList = [];
+    for i in recmMovieFind:
+        recmMovieList.append((i.find('a').text,i.find('a').attrs['href']))
+    #判断找到的新页面是否已经爬过了，如果爬过则跳过
+    for i in recmMovieList:
+        if len(GDB_movie.search_Movie(i[0])) == 0:    # 查看是否爬过了
+            urlManager.add_URL(i)   # 添加到URL管理器中
             
 
     print("完成爬取第"+str(pageNum)+"次页面数据")
